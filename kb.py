@@ -1,53 +1,62 @@
-import time, multiprocessing
+import time, multiprocessing, random, threading
 from pynput.keyboard import Key, Controller
 
-# whether the script is running
 PAUSED = False
+RUNNING = True
 
 # The keyboard simulator
 KB = Controller()
 
 # simulate some keypresses
 def sim_input():
-    while True:
+    while RUNNING:
         if not PAUSED:
-            # press a key that does nothing
-            for _ in range(5):
+            print("\nsending inputs...")
+
+            # simulate a keyboard
+            for i in range(10):
                 KB.press(Key.f20)
+
+                # pause for a short amount of time (at least 20 ms)
+                time.sleep(0.001 * random.randint(20, 31))
+
                 KB.release(Key.f20)
-                time.sleep(1)
+
+                # pause for a random amount of time (at least 100 ms)
+                time.sleep(0.001 * random.randint(100, 501))
+
+            # format output nicely
+            if RUNNING:
+                print("\n>", end=' ', flush=True)
 
         # wait for 5 mins
-        time.sleep(300)
+        time.sleep(3)
 
 def main():
     global PAUSED
-
-    running = True
+    global RUNNING
 
     # simulate the keyboard
-    sim_process = multiprocessing.Process(target=sim_input, args=())
+    sim_process = threading.Thread(target=sim_input, args=())
     sim_process.start()
 
-    while running:
+    while True:
         user_input = input("> ")
 
-        # pause the script
-        if not PAUSED and user_input.lower() == "pause":
-            print("pausing...")
+        if user_input.lower() == "pause":
+            print("pausing...\n")
             PAUSED = True
 
-        # resume the script
-        if PAUSED and user_input.lower() == "resume":
-            print("resuming...")
+        if user_input.lower() == "resume":
+            print("resuming...\n")
             PAUSED = False
 
-        # end the script
         if user_input == "STOP":
-            running = False
+            print("stopping...\n")
+            RUNNING = False
+            break
 
     # kill the sim process
-    sim_process.terminate()
     sim_process.join()
 
     # make sure that the key is released
