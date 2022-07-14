@@ -1,57 +1,62 @@
-import time, multiprocessing, random, threading
+import time, random, threading
 from pynput.keyboard import Key, Controller
 
+# control the script
 PAUSED = False
 RUNNING = True
 
-# The keyboard simulator
+# necessary constants
+KEY = Key.f20 # the key to press
+TIMEOUT = 300 # seconds bewteen inputs
+
+# the keyboard simulator
 KB = Controller()
+
+# simulate a keystroke of a key in a direction and wait for some amount of time
+def key_sim_and_pause(fn, duration):
+    fn(KEY) # call a passed function
+    time.sleep(0.001 * duration) # sleep for some number of ms
 
 # simulate some keypresses
 def sim_input():
+    # the current time
+    current = time.mktime(time.localtime())
+
     while RUNNING:
+        # don't simulate unnecessary keystrokes
+        if time.mktime(time.localtime()) - current < TIMEOUT:
+            continue
+
         if not PAUSED:
-            print("\nsending inputs...")
-
-            # simulate a keyboard
+            # simulate some keystrokes
             for i in range(10):
-                KB.press(Key.f20)
-
-                # pause for a short amount of time (at least 20 ms)
-                time.sleep(0.001 * random.randint(20, 31))
-
-                KB.release(Key.f20)
-
-                # pause for a random amount of time (at least 100 ms)
-                time.sleep(0.001 * random.randint(100, 501))
+                key_sim_and_pause(KB.press, random.randint(20, 31))
+                key_sim_and_pause(KB.release, random.randint(100, 501))
 
             # format output nicely
             if RUNNING:
                 print("\n>", end=' ', flush=True)
-
-        # wait for 5 mins
-        time.sleep(3)
+                current = time.mktime(time.localtime()) # update the time
 
 def main():
     global PAUSED
     global RUNNING
 
-    # simulate the keyboard
     sim_process = threading.Thread(target=sim_input, args=())
     sim_process.start()
 
     while True:
-        user_input = input("> ")
+        user_input = input("> ").lower()
 
-        if user_input.lower() == "pause":
+        if user_input == "pause":
             print("pausing...\n")
             PAUSED = True
 
-        if user_input.lower() == "resume":
+        if user_input == "resume":
             print("resuming...\n")
             PAUSED = False
 
-        if user_input == "STOP":
+        if user_input == "stop":
             print("stopping...\n")
             RUNNING = False
             break
@@ -60,7 +65,7 @@ def main():
     sim_process.join()
 
     # make sure that the key is released
-    KB.release(Key.f20)
+    KB.release(KEY)
 
 if __name__ == "__main__":
     main()
