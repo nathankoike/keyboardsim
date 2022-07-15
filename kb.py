@@ -7,14 +7,14 @@ RUNNING = True
 
 # necessary constants
 KEY = Key.f20 # the key to press
-TIMEOUT = 300 # seconds bewteen inputs
+TIMEOUT = 50 # seconds bewteen inputs
 
 # the keyboard simulator
 KB = Controller()
 
 # simulate a keystroke of a key in a direction and wait for some amount of time
 def key_sim_and_pause(fn, duration):
-    fn(KEY) # call a passed function
+    fn(KEY)
     time.sleep(0.001 * duration) # sleep for some number of ms
 
 # simulate some keypresses
@@ -33,10 +33,8 @@ def sim_input():
                 key_sim_and_pause(KB.press, random.randint(20, 31))
                 key_sim_and_pause(KB.release, random.randint(100, 501))
 
-            # format output nicely
-            if RUNNING:
-                print("\n>", end=' ', flush=True)
-                current = time.mktime(time.localtime()) # update the time
+            # update the time
+            current = time.mktime(time.localtime())
 
 def main():
     global PAUSED
