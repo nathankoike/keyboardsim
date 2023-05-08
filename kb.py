@@ -43,19 +43,16 @@ def check_time(time1, time2):
 
 # simulate a keystroke of a key in a direction and wait for some amount of time
 def key_sim_and_pause(fn, duration):
+	global KEY
+
 	fn(KEY)
 	time.sleep(0.001 * duration) # sleep for some number of ms
 
 # simulate some keypresses
 def sim_input():
-	# the current time
-	current = time.mktime(time.localtime())
+	global RUNNING, PAUSED, TIMEOUT
 
 	while RUNNING:
-		# don't simulate unnecessary keystrokes
-		if time.mktime(time.localtime()) - current < TIMEOUT:
-			continue
-
 		if not PAUSED:
 			# simulate some keystrokes
 			for i in range(10):
@@ -65,9 +62,11 @@ def sim_input():
 			# update the time
 			current = time.mktime(time.localtime())
 
+		time.sleep(TIMEOUT)
+
 # check the current time against the start and end times
 def time_check():
-	global PAUSED, RUNNING, FULL_MANUAL, START_TIME, END_TIME, WEEKEND_START
+	global PAUSED, RUNNING, FULL_MANUAL, START_TIME, END_TIME, WEEKEND_START, TIMEOUT
 
 	start_time = [int(i) for i in START_TIME.split(':')[:]]
 	end_time = [int(i) for i in END_TIME.split(':')[:]]
@@ -94,6 +93,8 @@ def time_check():
 			not FULL_MANUAL and not PAUSED:
 			print("\npausing...\n\n> ", end="")
 			PAUSED = True
+
+		time.sleep(TIMEOUT)
 
 def main():
 	global PAUSED, RUNNING, FULL_MANUAL, START_TIME, END_TIME
